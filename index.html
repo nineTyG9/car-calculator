@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鸿蒙智行 - 落地价计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            /*
+              背景方案（按优先级）：
+              1. 本地 bg.jpg — 放一张华为车图到同目录下即可
+              2. 在线车图（如加载成功则显示）
+              3. 纯色渐变兜底
+            */
+            background:
+                linear-gradient(135deg, rgba(0, 0, 0, 0.55) 0%, rgba(10, 10, 20, 0.35) 50%, rgba(0, 0, 0, 0.6) 100%),
+                url('bg.jpg') center/cover no-repeat fixed,
+                linear-gradient(160deg, #0d0d15 0%, #1a1a28 40%, #0d0d18 100%);
+            background-color: #0d0d15;
+        }
+
+        /* 光晕点缀 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 25% 40%, rgba(200, 180, 140, 0.10) 0%, transparent 50%),
+                radial-gradient(ellipse at 75% 60%, rgba(180, 160, 120, 0.06) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 主容器 */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 460px;
+            background: rgba(255, 255, 255, 0.93);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 20px;
+            padding: 32px 28px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.15);
+        }
+
+        /* 顶部品牌区域 */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #c9a96e;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .header .title-group h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: 0.5px;
+        }
+
+        .header .title-group p {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .price-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 0 16px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .price-input-wrapper:focus-within {
+            border-color: #c9a96e;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.08);
+        }
+
+        .price-input-wrapper .currency {
+            font-size: 22px;
+            font-weight: 700;
+            color: #888;
+            margin-right: 4px;
+        }
+
+        .price-input-wrapper input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a2e;
+            background: transparent;
+            padding: 16px 0;
+            font-family: inherit;
+        }
+
+        .price-input-wrapper input::placeholder {
+            color: #ccc;
+            font-weight: 400;
+            font-size: 18px;
+        }
+
+        .price-input-wrapper .unit {
+            font-size: 14px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        /* 快捷价格按钮 */
+        .quick-prices {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-price-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
+            background: #fff;
+            cursor: pointer;
+            font-size: 11px;
+            color: #666;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .quick-price-btn:hover {
+            background: #1a1a2e;
+            color: #fff;
+            border-color: #1a1a2e;
+        }
+
+        /* 智驾包选项 */
+        .option-section {
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #f9f9fb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            border: 1.5px solid transparent;
+        }
+
+        .option-item:hover {
+            background: #f0f0f5;
+        }
+
+        .option-item.selected {
+            background: #faf7f0;
+            border-color: #c9a96e;
+        }
+
+        .option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .option-info .option-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .option-info .option-desc {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .option-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #c9a96e;
+        }
+
+        .option-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid #d0d0d0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .option-item.selected .option-checkbox {
+            background: #c9a96e;
+            border-color: #c9a96e;
+        }
+
+        .option-checkbox::after {
+            content: '✓';
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s ease;
+        }
+
+        .option-item.selected .option-checkbox::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .option-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* 明细区域 */
+        .detail-section {
+            background: #f9f9fb;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #aaa;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row .detail-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .detail-row .detail-label small {
+            display: block;
+            font-size: 11px;
+            color: #bbb;
+            margin-top: 1px;
+            font-weight: 400;
+        }
+
+        .detail-row .detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            text-align: right;
+        }
+
+        /* 总计区域 */
+        .total-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .total-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .total-price {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: #c9a96e;
+        }
+
+        .total-price .yen {
+            font-size: 22px;
+            font-weight: 600;
+            margin-right: 2px;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+
+        .saved-tip {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 6px;
+        }
+
+        /* 底部信息 */
+        .footer-note {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #bbb;
+            line-height: 1.6;
+        }
+
+        /* 响应式 */
+        @media (max-width: 520px) {
+            .main-container {
+                padding: 24px 18px;
+                border-radius: 16px;
+            }
+            .total-price {
+                font-size: 34px;
+            }
+            .price-input-wrapper input {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- 顶部 -->
+        <div class="header">
+            <div class="logo-icon">鸿蒙</div>
+            <div class="title-group">
+                <h1>落地价计算器</h1>
+                <p>鸿蒙智行 · 华为全系车型</p>
+            </div>
+        </div>
+
+        <!-- 裸车价输入 -->
+        <div class="input-section">
+            <label>裸车价（元）</label>
+            <div class="price-input-wrapper">
+                <span class="currency">¥</span>
+                <input type="number" id="carPrice" placeholder="请输入裸车价" oninput="calculate()">
+                <span class="unit">元</span>
+            </div>
+            <div class="quick-prices">
+                <button class="quick-price-btn" onclick="setQuickPrice(249800)">问界M5</button>
+                <button class="quick-price-btn" onclick="setQuickPrice(289800)">问界M7</button>
+                <button class="quick-price-btn" onclick="setQuickPrice(469800)">问界M9</button>
+                <button class="quick-price-btn" onclick="setQuickPrice(259800)">智界S7</button>
+                <button class="quick-price-btn" onclick="setQuickPrice(399800)">享界S9</button>
+                <button class="quick-price-btn" onclick="setQuickPrice(319800)">智界R7</button>
+            </div>
+        </div>
+
+        <!-- 智驾包选项 -->
+        <div class="option-section">
+            <div class="option-item selected" id="smartDriveOption" onclick="toggleSmartDrive()">
+                <div class="option-info">
+                    <span class="option-name">高阶智驾包</span>
+                    <span class="option-desc">选配项目，各车型价格以官方为准</span>
+                </div>
+                <div class="option-right">
+                    <span class="option-price">¥12,000</span>
+                    <div class="option-checkbox"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 费用明细 -->
+        <div class="detail-section" id="detailSection" style="display: none;">
+            <div class="detail-title">费用明细</div>
+            <div class="detail-row">
+                <span class="detail-label">裸车价</span>
+                <span class="detail-value" id="detailCarPrice">-</span>
+            </div>
+            <div class="detail-row" id="smartDriveRow" style="display: none;">
+                <span class="detail-label">智驾包</span>
+                <span class="detail-value" style="color:#c9a96e;" id="detailSmartDrive">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">
+                    购置税
+                    <small id="taxFormula"></small>
+                </span>
+                <span class="detail-value" id="detailTax">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">
+                    保险（预估）
+                    <small>含交强险+商业险</small>
+                </span>
+                <span class="detail-value" id="detailInsurance">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">上牌费</span>
+                <span class="detail-value" id="detailReg">-</span>
+            </div>
+        </div>
+
+        <!-- 落地价 -->
+        <div class="total-section">
+            <div class="total-label">预计落地价</div>
+            <div class="total-price">
+                <span class="yen">¥</span><span id="totalPrice">-</span>
+            </div>
+            <div class="saved-tip" id="savedTip"></div>
+        </div>
+
+        <div class="footer-note">
+            * 保险为预估值，实际以保险公司报价为准<br>
+            * 购置税计算依据新能源汽车购置税减免政策
+        </div>
+    </div>
+
+    <script>
+        // 智驾包选中状态（默认选中）
+        let smartDriveSelected = true;
+
+        function toggleSmartDrive() {
+            smartDriveSelected = !smartDriveSelected;
+            const option = document.getElementById('smartDriveOption');
+            if (smartDriveSelected) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+            calculate();
+        }
+
+        function setQuickPrice(price) {
+            document.getElementById('carPrice').value = price;
+            // 保持智驾包当前状态不变
+            calculate();
+        }
+
+        // 根据裸车价分段估算保险
+        function estimateInsurance(carPrice) {
+            if (!carPrice || carPrice <= 0) return 0;
+            // 基准：289,800 → ~7,000
+            if (carPrice < 150000) {
+                return Math.round(4500 + (carPrice - 100000) * 0.015);
+            } else if (carPrice < 250000) {
+                return Math.round(5200 + (carPrice - 150000) * 0.016);
+            } else if (carPrice < 350000) {
+                return Math.round(6500 + (carPrice - 250000) * 0.015);
+            } else if (carPrice < 500000) {
+                return Math.round(8000 + (carPrice - 350000) * 0.012);
+            } else {
+                return Math.round(9800 + (carPrice - 500000) * 0.01);
+            }
+        }
+
+        function calculate() {
+            const priceInput = document.getElementById('carPrice');
+            const carPrice = parseFloat(priceInput.value);
+            const detailSection = document.getElementById('detailSection');
+
+            if (!carPrice || carPrice <= 0) {
+                detailSection.style.display = 'none';
+                document.getElementById('totalPrice').textContent = '-';
+                document.getElementById('savedTip').textContent = '';
+                return;
+            }
+
+            detailSection.style.display = 'block';
+
+            // 裸车价
+            document.getElementById('detailCarPrice').textContent = '¥' + carPrice.toLocaleString('zh-CN');
+
+            // 智驾包
+            const smartDrivePrice = smartDriveSelected ? 12000 : 0;
+            const smartDriveRow = document.getElementById('smartDriveRow');
+            if (smartDriveSelected) {
+                smartDriveRow.style.display = 'flex';
+                document.getElementById('detailSmartDrive').textContent = '¥12,000';
+            } else {
+                smartDriveRow.style.display = 'none';
+            }
+
+            // 购置税
+            let tax;
+            if (carPrice < 339000) {
+                tax = Math.round(carPrice / 11.3 / 2);
+                document.getElementById('taxFormula').textContent = '车价÷11.3÷2（减免）';
+            } else {
+                tax = Math.round(carPrice / 11.3 - 15000);
+                document.getElementById('taxFormula').textContent = '车价÷11.3 - 15,000';
+            }
+            tax = Math.max(0, tax);
+            document.getElementById('detailTax').textContent = '¥' + tax.toLocaleString('zh-CN');
+
+            // 保险
+            const insurance = estimateInsurance(carPrice);
+            document.getElementById('detailInsurance').textContent = '¥' + insurance.toLocaleString('zh-CN');
+
+            // 上牌费
+            const registration = 130;
+            document.getElementById('detailReg').textContent = '¥130';
+
+            // 落地价
+            const total = carPrice + smartDrivePrice + tax + insurance + registration;
+            document.getElementById('totalPrice').textContent = total.toLocaleString('zh-CN');
+
+            // 小提示
+            if (smartDriveSelected) {
+                document.getElementById('savedTip').textContent = '含高阶智驾包 ¥12,000';
+            } else {
+                document.getElementById('savedTip').textContent = '';
+            }
+        }
+    </script>
+</body>
+</html>
