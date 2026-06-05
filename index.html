@@ -440,6 +440,7 @@
         function verifyLogin() {
             var input = document.getElementById('loginPassword').value;
             if (input === getPassword()) {
+                incrementUsage(); // 登录成功即计一次使用
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('loginError').style.display = 'none';
             } else {
@@ -476,18 +477,17 @@
                 msg.textContent = '新密码至少4位'; msg.style.display = 'block'; return;
             }
 
-            var success = false;
+            var cloudOk = false;
             if (sb) {
                 try {
                     var r = await sb.from('config').upsert({ key: 'password', value: newPw });
-                    if (!r.error) success = true;
+                    if (!r.error) cloudOk = true;
                 } catch(e) {}
             }
             localStorage.setItem(PW_KEY, newPw);
             cachedPassword = newPw;
-            success = true;
 
-            msg.textContent = success ? '密码修改成功（云端生效）' : '密码修改成功（本地生效）';
+            msg.textContent = cloudOk ? '密码修改成功（云端 + 本地生效）' : '密码修改成功（仅本地生效，请检查Supabase权限）';
             msg.style.color = '#34c759'; msg.style.display = 'block';
             document.getElementById('oldPwLogin').value = '';
             document.getElementById('newPwLogin').value = '';
@@ -606,7 +606,6 @@
             var onRoad = calcOnRoadPrice(carPrice);
 
             if (onRoad) {
-                if (onRoad.total >= 100000) incrementUsage();
                 document.getElementById('detailCarPrice').textContent = '¥' + onRoad.carPrice.toLocaleString('zh-CN');
                 document.getElementById('detailSmartDrive').textContent = smartDriveSelected ? '¥12,000' : '¥0';
                 document.getElementById('taxFormula').textContent = carPrice < 339000 ? '车价÷11.3÷2（减免）' : '车价÷11.3 − 15,000';
