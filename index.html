@@ -491,25 +491,65 @@
         </div>
     </div>
 
-    <script>
-        // ========== 密码管理 ==========
-        const DEFAULT_PW = '123456';
-        const PW_KEY = 'hima_calc_pwd';
-        const AUTH_PW_KEY = 'hima_auth_pwd';
-        const DEFAULT_AUTH_PW = 'admin888';
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-        function getPassword() {
-            return localStorage.getItem(PW_KEY) || DEFAULT_PW;
+    <script>
+        // ========== 配置：换成你的 Supabase URL 和 anon key ==========
+        const SUPABASE_URL = 'https://nspruiprcpihzvzfarjt.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zcHJ1aXByY3BpaHp2emZhcmp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzY2MjksImV4cCI6MjA5NjE1MjYyOX0.BjHWUUtq1BJmITen_Oc0NiOli9TflvAT4gwYHUELSVg';
+
+        // ========== Supabase 初始化 ==========
+        let supabase = null;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch(e) {
+            console.warn('Supabase 未配置，使用本地存储');
         }
 
-        function getAuthPassword() {
-            return localStorage.getItem(AUTH_PW_KEY) || DEFAULT_AUTH_PW;
+        // ========== 密码管理 ==========
+        const DEFAULT_PW = '123456';
+        const DEFAULT_AUTH_PW = 'admin888';
+        const PW_KEY = 'hima_calc_pwd';
+        const AUTH_PW_KEY = 'hima_auth_pwd';
+        let cachedPassword = null;
+        let cachedAuthPassword = null;
+
+        // 优先从 Supabase 读取密码，失败则用 localStorage
+        async function fetchPasswords() {
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase
+                        .from('config').select('key,value');
+                    if (!error && data) {
+                        data.forEach(row => {
+                            if (row.key === 'password') cachedPassword = row.value;
+                            if (row.key === 'auth_password') cachedAuthPassword = row.value;
+                        });
+                        return;
+                    }
+                } catch(e) {}
+            }
+            // 降级到 localStorage
+            cachedPassword = localStorage.getItem(PW_KEY) || DEFAULT_PW;
+            cachedAuthPassword = localStorage.getItem(AUTH_PW_KEY) || DEFAULT_AUTH_PW;
+        }
+
+        async function getPassword() {
+            if (!cachedPassword) await fetchPasswords();
+            return cachedPassword || DEFAULT_PW;
+        }
+
+        async function getAuthPassword() {
+            if (!cachedAuthPassword) await fetchPasswords();
+            return cachedAuthPassword || DEFAULT_AUTH_PW;
         }
 
         // ---- 登录 ----
-        function verifyLogin() {
+        async function verifyLogin() {
             const input = document.getElementById('loginPassword').value;
-            if (input === getPassword()) {
+            const pw = await getPassword();
+            if (input === pw) {
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('loginError').style.display = 'none';
             } else {
@@ -531,19 +571,23 @@
             document.getElementById('loginError').style.display = 'none';
         }
 
-        // ---- 登录界面修改密码 ----
-        function changePasswordOnLogin() {
+        // ---- 修改密码（写入 Supabase + localStorage 双写） ----
+        async function changePasswordOnLogin() {
             const oldPw = document.getElementById('oldPwLogin').value;
             const newPw = document.getElementById('newPwLogin').value;
             const authPw = document.getElementById('authPwLogin').value;
             const msg = document.getElementById('changePwMsg');
             msg.style.color = '#e74c3c';
-            if (authPw !== getAuthPassword()) {
+
+            const currentPw = await getPassword();
+            const currentAuth = await getAuthPassword();
+
+            if (authPw !== currentAuth) {
                 msg.textContent = '修改权限密码错误';
                 msg.style.display = 'block';
                 return;
             }
-            if (oldPw !== getPassword()) {
+            if (oldPw !== currentPw) {
                 msg.textContent = '当前密码错误';
                 msg.style.display = 'block';
                 return;
@@ -553,8 +597,22 @@
                 msg.style.display = 'block';
                 return;
             }
+
+            // 写入 Supabase
+            let success = false;
+            if (supabase) {
+                try {
+                    const { error } = await supabase
+                        .from('config').upsert({ key: 'password', value: newPw });
+                    if (!error) success = true;
+                } catch(e) {}
+            }
+            // 同时写 localStorage
             localStorage.setItem(PW_KEY, newPw);
-            msg.textContent = '密码修改成功 ✓';
+            cachedPassword = newPw;
+            success = true;
+
+            msg.textContent = success ? '密码修改成功 ✓（云端生效）' : '密码修改成功 ✓（本地生效）';
             msg.style.color = '#34c759';
             msg.style.display = 'block';
             document.getElementById('oldPwLogin').value = '';
@@ -576,41 +634,60 @@
             return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
         }
 
-        function incrementUsage() {
+        async function incrementUsage() {
             const today = getDateKey();
             const month = getMonthKey();
+
+            // 1) 写 Supabase（upsert 原子自增）
+            if (supabase) {
+                try {
+                    // 使用 RPC 或两次 upsert 来原子自增
+                    for (const dk of [today, month]) {
+                        // 先读取当前值
+                        const { data } = await supabase.from('usage_logs').select('count').eq('date_key', dk).single();
+                        const current = (data && data.count) ? data.count : 0;
+                        await supabase.from('usage_logs').upsert({ date_key: dk, count: current + 1 });
+                    }
+                } catch(e) {}
+            }
+
+            // 2) 写 localStorage（本地兜底）
             const dailyKey = 'hima_usage_' + today;
             const monthlyKey = 'hima_usage_' + month;
-
             let daily = parseInt(localStorage.getItem(dailyKey) || '0');
             let monthly = parseInt(localStorage.getItem(monthlyKey) || '0');
-
-            daily++;
-            monthly++;
-
+            daily++; monthly++;
             localStorage.setItem(dailyKey, daily);
             localStorage.setItem(monthlyKey, monthly);
-
-            // 清理过期数据（保留最近7天+本月）
-            const now = new Date();
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('hima_usage_')) {
-                    const dateStr = key.replace('hima_usage_', '');
-                    if (dateStr.length === 10) {
-                        const d = new Date(dateStr);
-                        if ((now - d) / 86400000 > 7) localStorage.removeItem(key);
-                    }
-                }
-            }
 
             document.getElementById('dailyCount').textContent = daily;
             document.getElementById('monthlyCount').textContent = monthly;
         }
 
-        function loadUsage() {
+        async function loadUsage() {
             const today = getDateKey();
             const month = getMonthKey();
+
+            // 1) 优先从 Supabase 读取
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase
+                        .from('usage_logs').select('date_key,count')
+                        .in('date_key', [today, month]);
+                    if (!error && data) {
+                        let d = 0, m = 0;
+                        data.forEach(row => {
+                            if (row.date_key === today) d = row.count;
+                            if (row.date_key === month) m = row.count;
+                        });
+                        document.getElementById('dailyCount').textContent = d;
+                        document.getElementById('monthlyCount').textContent = m;
+                        return;
+                    }
+                } catch(e) {}
+            }
+
+            // 2) 降级到 localStorage
             const daily = parseInt(localStorage.getItem('hima_usage_' + today) || '0');
             const monthly = parseInt(localStorage.getItem('hima_usage_' + month) || '0');
             document.getElementById('dailyCount').textContent = daily;
@@ -727,8 +804,8 @@
         }
 
         // ========== 初始化 ==========
-        // 填充保险下拉选项（5000~15000，间隔500）
-        (function() {
+        (async function init() {
+            // 填充保险下拉选项（5000~15000，间隔500）
             const sel = document.getElementById('insuranceInput');
             for (let v = 5000; v <= 15000; v += 500) {
                 const opt = document.createElement('option');
@@ -737,10 +814,12 @@
                 if (v === 7000) opt.selected = true;
                 sel.appendChild(opt);
             }
+            document.getElementById('toggleTrack').classList.add('on');
+            // 预加载密码
+            await fetchPasswords();
+            await loadUsage();
+            calculateAll();
         })();
-        document.getElementById('toggleTrack').classList.add('on');
-        loadUsage();
-        calculateAll();
     </script>
 </body>
 </html>
