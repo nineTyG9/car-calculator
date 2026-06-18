@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>购车预算表</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -75,9 +76,9 @@
             display: flex; align-items: center; gap: 10px;
             margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #eee;
         }
-        .header .logo-icon { width: 38px; height: 38px; flex-shrink: 0; }
+        .header .logo-icon { width: 48px; height: 48px; flex-shrink: 0; }
         .header .logo-icon img { width: 100%; height: 100%; object-fit: contain; }
-        .header .title-group h1 { font-size: 18px; font-weight: 700; color: #1a1a2e; letter-spacing: 0.5px; }
+        .header .title-group h1 { font-size: 25px; font-weight: 800; color: #1a1a2e; letter-spacing: 0.5px; }
         .header .title-group p { font-size: 11px; color: #999; margin-top: 1px; }
 
         .input-section { margin-bottom: 16px; }
@@ -97,17 +98,20 @@
         .price-input-wrapper input {
             flex: 1; border: none; outline: none;
             font-size: 24px; font-weight: 700; color: #1a1a2e;
-            background: transparent; padding: 14px 0; font-family: inherit;
+            background: transparent; padding: 14px 0;
+            font-family: 'Inter', sans-serif;
         }
-        .price-input-wrapper input::placeholder { color: #ccc; font-weight: 400; font-size: 16px; }
+        .price-input-wrapper input::placeholder { color: #ccc; font-weight: 400; font-size: 20px; }
         .price-input-wrapper .unit { font-size: 13px; color: #999; font-weight: 500; }
+        .input-warning { font-size: 11px; color: #d88; margin-top: 5px; padding-left: 4px; display: none; }
 
         .detail-section {
-            background: #f9f9fb; border-radius: 14px;
-            padding: 16px 18px; margin-bottom: 0;
+            background: #f5f5f7; border-radius: 16px;
+            padding: 18px 20px; margin-bottom: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
         .detail-title {
-            font-size: 12px; font-weight: 600; color: #aaa;
+            font-size: 16px; font-weight: 600; color: #777;
             letter-spacing: 1px; margin-bottom: 10px;
         }
         .detail-row {
@@ -115,13 +119,14 @@
             padding: 10px 0; border-bottom: 1px solid #eee;
         }
         .detail-row:last-child { border-bottom: none; }
-        .detail-row .detail-label { font-size: 13px; color: #666; display: flex; align-items: center; gap: 8px; }
-        .detail-row .detail-label small { display: block; font-size: 10px; color: #bbb; margin-top: 1px; font-weight: 400; }
-        .detail-row .detail-value { font-size: 14px; font-weight: 600; color: #333; text-align: right; }
+        .detail-row .detail-label { font-size: 14px; font-weight: 400; color: #666; display: flex; align-items: center; gap: 8px; }
+        .detail-row .detail-label small { display: block; font-size: 10px; color: #ccc; margin-top: 2px; font-weight: 400; }
+        .detail-row .detail-value { font-size: 14px; font-weight: 600; color: #666; text-align: right; font-family: inherit; }
+        .detail-unit { font-size: 14px; font-weight: 400; color: #666; font-family: inherit; }
 
         .detail-row.total-row { border-bottom: none; padding: 12px 0 4px; }
-        .detail-row.total-row .detail-label { font-size: 15px; font-weight: 700; color: #1a1a2e; }
-        .detail-row.total-row .detail-value { font-size: 22px; font-weight: 800; color: #c9a96e; }
+        .detail-row.total-row .detail-label { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+        .detail-row.total-row .detail-value { font-size: 30px; font-weight: 800; color: #c9a96e; font-family: inherit; }
 
         .inline-toggle {
             display: flex; align-items: center; gap: 6px;
@@ -142,19 +147,21 @@
         .toggle-price { font-size: 13px; color: #333; font-weight: 600; min-width: 60px; text-align: right; }
 
         .finance-section {
-            background: #f9f9fb; border-radius: 14px;
-            padding: 16px 18px; margin-top: 16px;
+            background: #f5f5f7; border-radius: 16px;
+            padding: 18px 20px; margin-top: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
         .loan-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
         .loan-input-row .loan-field { flex: 1; }
         .loan-input-row .loan-field label {
-            display: block; font-size: 11px; font-weight: 600; color: #999; margin-bottom: 4px;
+            display: block; font-size: 14px; font-weight: 600; color: #999; margin-bottom: 4px;
         }
         .loan-input-row .loan-field input {
             width: 100%; padding: 10px 12px; border-radius: 8px;
             border: 1.5px solid #e0e0e0; font-size: 15px; font-weight: 600;
-            color: #1a1a2e; background: #e8e8ec; font-family: inherit; outline: none;
+            color: #1a1a2e; background: #e8e8ec; outline: none;
             transition: border-color 0.2s;
+            font-family: 'Inter', sans-serif;
         }
         .loan-input-row .loan-field input::placeholder { color: #ccc; font-weight: 400; }
         .loan-input-row .loan-field input:focus { border-color: #c9a96e; }
@@ -167,7 +174,7 @@
             color: #888; transition: all 0.2s; font-family: inherit;
         }
         .year-btn:hover { border-color: #c9a96e; color: #c9a96e; }
-        .year-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+        .year-btn.active { background: #c9a96e; color: #fff; border-color: #c9a96e; }
 
         .finance-result { margin-top: 12px; }
         .finance-result .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -178,20 +185,21 @@
         .finance-result .result-card.full.monthly-card {
             border: 1.5px solid #c9a96e; background: #fefcf7;
         }
-        .finance-result .result-card.full.monthly-card .card-value { color: #c9a96e; font-size: 22px; }
+        .finance-result .result-card.full.monthly-card .card-label { font-size: 12px; }
+        .finance-result .result-card.full.monthly-card .card-value { color: #c9a96e; font-size: 30px; }
         .finance-result .result-card.full { grid-column: 1 / -1; }
         .finance-result .result-card .card-label { font-size: 10px; color: #999; margin-bottom: 3px; }
-        .finance-result .result-card .card-value { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+        .finance-result .result-card .card-value { font-size: 18px; font-weight: 700; color: #1a1a2e; font-family: 'Inter', sans-serif; }
         .finance-result .result-card .card-value.small { font-size: 15px; }
         #fAvgInterest { font-size: 19px !important; }
         .finance-result .result-card .card-sub { font-size: 10px; color: #bbb; margin-top: 2px; }
 
-        .content-columns { display: flex; flex-direction: column; gap: 0; }
+        .content-columns { display: flex; flex-direction: column; gap: 18px; }
         .left-col, .right-col { width: 100%; }
 
         .insurance-row select {
             border: none; background: transparent;
-            font-size: 14px; font-weight: 600; color: #333;
+            font-size: 14px; font-weight: 600; color: #666;
             font-family: inherit; outline: none; cursor: pointer;
             text-align: right; padding: 0;
             -webkit-appearance: none; appearance: none;
@@ -200,6 +208,9 @@
             border: 1.5px solid #e0e0e0; background: #fff;
             padding: 4px 8px; border-radius: 8px;
         }
+        .no-spinner::-webkit-inner-spin-button,
+        .no-spinner::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .no-spinner { -moz-appearance: textfield; }
 
         .footer-note { text-align: center; margin-top: 14px; font-size: 10px; color: #bbb; line-height: 1.8; }
         .footer-note p { margin: 2px 0; }
@@ -215,39 +226,14 @@
             .loan-input-row { flex-direction: column; gap: 8px; }
         }
 
-        /* 横屏：全屏覆盖，不露深色背景 */
+        /* 横屏：全屏覆盖 */
         @media (min-aspect-ratio: 1/1) and (max-height: 900px),
                (min-width: 780px) {
-            .main-container { max-width: none !important; width: 75%; min-height: 100vh; border-radius: 0; padding: 28px 32px; box-shadow: none; margin: 0 auto; }
+            .main-container { max-width: none !important; width: 80%; border-radius: 0; padding: 28px 32px; box-shadow: none; margin: 0 auto; }
             .content-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
             .left-col { min-width: 0; overflow: hidden; }
             .right-col { min-width: 0; overflow: hidden; }
             .right-col .finance-section { margin-top: 0; }
-            .header .title-group h1 { font-size: 22px; }
-            .header .title-group p { font-size: 13px; }
-            .header .logo-icon { width: 46px; height: 46px; }
-            .input-section label { font-size: 14px; }
-            .price-input-wrapper input { font-size: 28px; padding: 18px 0; }
-            .price-input-wrapper .currency { font-size: 24px; }
-            .detail-title { font-size: 13px; }
-            .detail-row .detail-label { font-size: 14px; }
-            .detail-row .detail-value { font-size: 16px; }
-            .detail-row.total-row .detail-label { font-size: 17px; }
-            .detail-row.total-row .detail-value { font-size: 26px; }
-            .toggle-price { font-size: 14px; }
-            .inline-toggle .toggle-track { width: 40px; height: 22px; }
-            .inline-toggle .toggle-thumb { width: 18px; height: 18px; }
-            .inline-toggle .toggle-track.on .toggle-thumb { left: 20px; }
-            .insurance-row select { font-size: 16px; }
-            .loan-input-row .loan-field label { font-size: 13px; }
-            .loan-input-row .loan-field input { font-size: 17px; padding: 12px 14px; }
-            .year-btn { font-size: 15px; padding: 10px 4px; }
-            .finance-result .result-card { padding: 14px; }
-            .finance-result .result-card .card-label { font-size: 11px; }
-            .finance-result .result-card .card-value { font-size: 20px; }
-            .finance-result .result-card .card-value.small { font-size: 17px; }
-            .finance-result .result-card.full.monthly-card .card-value { font-size: 24px; }
-            .footer-note { font-size: 11px; }
         }
     </style>
 </head>
@@ -287,7 +273,11 @@
         <div class="header">
             <div class="logo-icon"><img src="HIMA.png" alt="HIMA"></div>
             <div class="title-group">
-                <h1>购车预算表</h1>
+                <div style="margin-bottom:4px;display:flex;flex-wrap:wrap;align-items:baseline;">
+                    <input type="text" id="carModel" placeholder="输入车型" oninput="autoResizeCarModel()" style="padding:0;border:none;font-size:29px;font-weight:700;font-family:inherit;outline:none;color:#c9a96e;background:transparent;vertical-align:baseline;width:auto;">
+                    <span id="carModelRuler" style="position:absolute;visibility:hidden;white-space:pre;font-size:27px;font-weight:700;font-family:inherit;pointer-events:none;"></span>
+                    <h1 style="margin:0;">购车预算表</h1>
+                </div>
                 <p>华为智能生活馆●广州美林天地</p>
             </div>
         </div>
@@ -299,44 +289,47 @@
                     <div class="price-input-wrapper">
                         <span class="currency">¥</span>
                         <input type="number" id="carPrice" placeholder="请输入裸车价" oninput="calculateAll()">
-                        <span class="unit">元</span>
                     </div>
+                    <p class="input-warning" id="carPriceWarning"></p>
                 </div>
 
                 <div class="detail-section" id="detailSection">
                     <div class="detail-title">费用明细</div>
                     <div class="detail-row">
                         <span class="detail-label">裸车价</span>
-                        <span class="detail-value" id="detailCarPrice">¥0</span>
+                        <span><span class="detail-value" id="detailCarPrice">0</span><span class="detail-unit">元</span></span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">
-                            高阶智驾包
-                            <span class="inline-toggle" id="smartDriveToggle" onclick="toggleSmartDrive()">
-                                <span class="toggle-track on" id="toggleTrack"><span class="toggle-thumb"></span></span>
-                            </span>
-                        </span>
-                        <span class="toggle-price" id="detailSmartDrive">¥12,000</span>
+                        <span class="detail-label">高阶智驾包</span>
+                        <span><input type="number" id="smartDriveInput" value="12000" min="0" step="500" oninput="calculateAll()" class="no-spinner" style="width:80px;padding:0;border:none;font-size:14px;font-weight:600;font-family:inherit;outline:none;text-align:right;color:#666;background:transparent;"><span class="detail-unit">元</span></span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">购置税<small id="taxFormula"></small></span>
-                        <span class="detail-value" id="detailTax">¥0</span>
+                        <span><span class="detail-value" id="detailTax">0</span><span class="detail-unit">元</span></span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">保险</span>
+                        <span class="detail-label">保险预估</span>
                         <div class="insurance-row">
-                            <select id="insuranceInput" onchange="calculateAll()"></select>
+                            <select id="insuranceInput" onchange="calculateAll()"></select><span class="detail-unit">元</span>
                         </div>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">上牌服务费</span>
                         <div class="insurance-row">
-                            <select id="registrationInput" onchange="calculateAll()"></select>
+                            <select id="registrationInput" onchange="calculateAll()"></select><span class="detail-unit">元</span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <input type="text" id="customName" placeholder="其他费用" style="width:100px;padding:0;border:none;font-size:14px;font-weight:600;font-family:inherit;outline:none;color:#666;background:transparent;" oninput="calculateAll()">
+                        </span>
+                        <div class="insurance-row">
+                            <span><input type="number" id="customPrice" value="0" min="0" step="100" oninput="calculateAll()" class="no-spinner" style="width:80px;padding:0;border:none;font-size:14px;font-weight:600;font-family:inherit;outline:none;text-align:right;color:#666;background:transparent;"><span class="detail-unit">元</span></span>
                         </div>
                     </div>
                     <div class="detail-row total-row">
-                        <span class="detail-label">落地价</span>
-                        <span class="detail-value" id="totalPrice">¥0</span>
+                        <span class="detail-label">落地价预计</span>
+                        <span><span class="detail-value" id="totalPrice">0</span><span class="detail-unit">元</span></span>
                     </div>
                 </div>
             </div>
@@ -347,7 +340,10 @@
                     <div class="loan-input-row">
                         <div class="loan-field">
                             <label>贷款额</label>
-                            <input type="number" id="loanAmount" placeholder="贷款金额" oninput="calculateAll()">
+                        <div style="position:relative;display:flex;align-items:center;">
+                            <span style="position:absolute;left:12px;font-size:15px;font-weight:600;color:#62626a;pointer-events:none;z-index:1;">¥</span>
+                            <input type="number" id="loanAmount" placeholder="贷款金额" oninput="calculateAll()" style="padding-left:24px;">
+                        </div>
                         </div>
                         <div class="loan-field">
                             <label>年费率（%）</label>
@@ -365,25 +361,25 @@
                         <div class="result-grid">
                             <div class="result-card">
                                 <div class="card-label">前期支付</div>
-                                <div class="card-value small" id="fPrepay">¥0</div>
-                                <div class="card-sub">落地价 − 贷款额</div>
+                                <div class="card-value small" id="fPrepay">0元</div>
+                                <div class="card-sub">落地价预计 − 贷款额</div>
                             </div>
                             <div class="result-card">
                                 <div class="card-label">车辆首付</div>
-                                <div class="card-value small" id="fDownPayment">¥0</div>
+                                <div class="card-value small" id="fDownPayment">0元</div>
                                 <div class="card-sub">裸车价 − 贷款额</div>
                             </div>
                             <div class="result-card">
                                 <div class="card-label">年均利息</div>
-                                <div class="card-value small" id="fAvgInterest">¥0</div>
+                                <div class="card-value small" id="fAvgInterest">0元</div>
                             </div>
                             <div class="result-card">
                                 <div class="card-label">总利息</div>
-                                <div class="card-value small" id="fTotalInterest">¥0</div>
+                                <div class="card-value small" id="fTotalInterest">0元</div>
                             </div>
                             <div class="result-card full monthly-card">
                                 <div class="card-label">月供（<span id="fMonths">36</span>期）</div>
-                                <div class="card-value" id="fMonthly">¥0</div>
+                                <div class="card-value" id="fMonthly">0元</div>
                             </div>
                         </div>
                     </div>
@@ -402,8 +398,8 @@
 
     <script>
         // ========== Supabase 配置 ==========
-        const SUPABASE_URL = 'https://nspruiprcpihzvzfarjt.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zcHJ1aXByY3BpaHp2emZhcmp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzY2MjksImV4cCI6MjA5NjE1MjYyOX0.BjHWUUtq1BJmITen_Oc0NiOli9TflvAT4gwYHUELSVg';
+        const SUPABASE_URL = 'https://vqymzxmujakljaxzeufg.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxeW16eG11amFrbGpheHpldWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NTI0MjMsImV4cCI6MjA5NzMyODQyM30.LHJJDMfY22d0Lnwf4dgzQ1P1Z9k4U5ks4fHTyc4b3oo';
 
         let sb = null;
         try {
@@ -557,14 +553,7 @@
         }
 
         // ========== 状态 ==========
-        var smartDriveSelected = true;
         var loanYears = 3;
-
-        function toggleSmartDrive() {
-            smartDriveSelected = !smartDriveSelected;
-            document.getElementById('toggleTrack').classList.toggle('on', smartDriveSelected);
-            calculateAll();
-        }
 
         function selectYear(y) {
             loanYears = y;
@@ -576,14 +565,15 @@
 
         function calcOnRoadPrice(carPrice) {
             if (!carPrice || carPrice <= 0) return null;
-            var smartDrive = smartDriveSelected ? 12000 : 0;
+            var smartDrive = parseInt(document.getElementById('smartDriveInput').value) || 0;
             var tax;
             if (carPrice < 339000) { tax = Math.round(carPrice / 11.3 / 2); }
             else { tax = Math.round(carPrice / 11.3 - 15000); }
             tax = Math.max(0, tax);
             var insurance = parseInt(document.getElementById('insuranceInput').value) || 0;
             var registration = parseInt(document.getElementById('registrationInput').value) || 0;
-            var total = carPrice + smartDrive + tax + insurance + registration;
+            var customPrice = parseInt(document.getElementById('customPrice').value) || 0;
+            var total = carPrice + smartDrive + tax + insurance + registration + customPrice;
             return { carPrice: carPrice, smartDrive: smartDrive, tax: tax, insurance: insurance, registration: registration, total: total };
         }
 
@@ -608,22 +598,42 @@
             return { loanAmount: loanAmount, ratePercent: ratePercent, years: years, months: months, totalInterest: totalInterest, avgInterest: avgInterest, monthly: monthly, prepay: prepay, downPayment: downPayment, apr: apr };
         }
 
+        function autoResizeCarModel() {
+            var input = document.getElementById('carModel');
+            var ruler = document.getElementById('carModelRuler');
+            ruler.textContent = input.value || input.placeholder || '';
+            input.style.width = (ruler.offsetWidth + 10) + 'px';
+        }
+
         function calculateAll() {
-            var carPrice = parseFloat(document.getElementById('carPrice').value);
+            var carPriceRaw = document.getElementById('carPrice').value.trim();
+            var carPrice = parseFloat(carPriceRaw);
+            var warning = document.getElementById('carPriceWarning');
+            var totalEl = document.getElementById('totalPrice');
+
+            // 输入验证
+            if (carPriceRaw !== '' && (isNaN(carPrice) || carPrice < 0)) {
+                warning.textContent = '请输入有效的裸车价格';
+                warning.style.display = 'block';
+            } else {
+                warning.textContent = '';
+                warning.style.display = 'none';
+            }
+
             var onRoad = calcOnRoadPrice(carPrice);
 
             if (onRoad) {
-                document.getElementById('detailCarPrice').textContent = '¥' + onRoad.carPrice.toLocaleString('zh-CN');
-                document.getElementById('detailSmartDrive').textContent = smartDriveSelected ? '¥12,000' : '¥0';
-                document.getElementById('taxFormula').textContent = carPrice < 339000 ? '车价÷11.3÷2（减免）' : '车价÷11.3 − 15,000';
-                document.getElementById('detailTax').textContent = '¥' + onRoad.tax.toLocaleString('zh-CN');
-                document.getElementById('totalPrice').textContent = '¥' + onRoad.total.toLocaleString('zh-CN');
+                document.getElementById('detailCarPrice').textContent = onRoad.carPrice.toLocaleString('zh-CN');
+                                document.getElementById('taxFormula').textContent = carPrice < 339000 ? '车价÷11.3÷2（减免）' : '车价÷11.3 − 15,000';
+                document.getElementById('detailTax').textContent = onRoad.tax.toLocaleString('zh-CN');
+                totalEl.textContent = onRoad.total.toLocaleString('zh-CN');
+                totalEl.style.cssText = '';
             } else {
-                document.getElementById('detailCarPrice').textContent = '¥0';
-                document.getElementById('detailSmartDrive').textContent = smartDriveSelected ? '¥12,000' : '¥0';
-                document.getElementById('detailTax').textContent = '¥0';
-                document.getElementById('totalPrice').textContent = '¥0';
+                document.getElementById('detailCarPrice').textContent = '0';
+                                document.getElementById('detailTax').textContent = '0';
                 document.getElementById('taxFormula').textContent = '';
+                totalEl.textContent = '请输入裸车价计算';
+                totalEl.style.cssText = 'color:#ccc;font-size:14px;font-weight:400;';
             }
 
             var loanAmount = parseFloat(document.getElementById('loanAmount').value);
@@ -631,11 +641,11 @@
             var finance = calcFinance(carPrice, loanAmount, ratePercent, loanYears);
 
             if (finance) {
-                document.getElementById('fAvgInterest').textContent = '¥' + finance.avgInterest.toLocaleString('zh-CN');
-                document.getElementById('fTotalInterest').textContent = '¥' + finance.totalInterest.toLocaleString('zh-CN');
-                document.getElementById('fPrepay').textContent = '¥' + finance.prepay.toLocaleString('zh-CN');
-                document.getElementById('fDownPayment').textContent = '¥' + finance.downPayment.toLocaleString('zh-CN');
-                document.getElementById('fMonthly').textContent = '¥' + finance.monthly.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('fAvgInterest').textContent = finance.avgInterest.toLocaleString('zh-CN') + '元';
+                document.getElementById('fTotalInterest').textContent = finance.totalInterest.toLocaleString('zh-CN') + '元';
+                document.getElementById('fPrepay').textContent = finance.prepay.toLocaleString('zh-CN') + '元';
+                document.getElementById('fDownPayment').textContent = finance.downPayment.toLocaleString('zh-CN') + '元';
+                document.getElementById('fMonthly').textContent = finance.monthly.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '元';
                 document.getElementById('fMonths').textContent = finance.months;
             }
         }
@@ -647,7 +657,7 @@
             for (var v = 5000; v <= 15000; v += 500) {
                 var opt = document.createElement('option');
                 opt.value = v;
-                opt.textContent = '¥' + v.toLocaleString('zh-CN');
+                opt.textContent = v.toLocaleString('zh-CN');
                 if (v === 7000) opt.selected = true;
                 sel.appendChild(opt);
             }
@@ -656,11 +666,10 @@
             [0, 130, 600].forEach(function(v) {
                 var opt = document.createElement('option');
                 opt.value = v;
-                opt.textContent = v === 0 ? '¥0' : '¥' + v.toLocaleString('zh-CN');
+                opt.textContent = v.toLocaleString('zh-CN');
                 if (v === 130) opt.selected = true;
                 regSel.appendChild(opt);
             });
-            document.getElementById('toggleTrack').classList.add('on');
             fetchPasswords();  // 后台异步，不阻塞
             loadUsage();
             calculateAll();
